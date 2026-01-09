@@ -1,0 +1,14 @@
+INFO Server started
+INFO User logged in
+WARNING Disk space low
+ERROR Database connection failed
+INFO User logged out
+ERROR Timeout occurred
+WARNING High memory usage
+INFO Server started
+INFO User logged in
+WARNING Disk space low
+ERROR Database connection failed
+INFO User logged out
+ERROR Timeout occurred
+WARNING High memory usage
