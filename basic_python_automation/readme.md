@@ -8,6 +8,7 @@ Scripts:
 3. uptime.py - Checks website availability
 4. log_analyzer - simple script to analyze server logs
 5. process_moniter - displays cpu,memory usage and the system processes and their ids
+6. api_crypto_price_checker - gets current crypto price from binance api and stores it in a json file
 
 Tech used:
 - Python
