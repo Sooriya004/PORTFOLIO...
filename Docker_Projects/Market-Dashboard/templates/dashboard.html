@@ -1,38 +1,180 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Market Dashboard</title>
-	<meta http-equiv="refresh" content="10">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Market Dashboard</title>
+    <!-- Google Fonts for a modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <style>
+        /* CSS Variables for easy color theme management */
+        :root {
+            --bg-color: #0f172a;      /* Dark Slate */
+            --card-bg: #1e293b;       /* Lighter Slate */
+            --text-color: #f8fafc;    /* White-ish */
+            --accent-color: #38bdf8;  /* Sky Blue */
+            --price-color: #4ade80;   /* Green */
+            --card-hover: #334155;    /* Hover State */
+        }
+
         body {
-            font-family: Arial;
-            background: #111;
-            color: white;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Header Styling */
+        header {
+            margin-top: 40px;
+            margin-bottom: 40px;
             text-align: center;
         }
+
         h1 {
-            margin-top: 40px;
+            font-weight: 600;
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
+
+        p.subtitle {
+            color: #94a3b8;
+            margin-top: 8px;
+            font-size: 0.95rem;
+        }
+
+        /* Grid Layout for Cards */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            display: grid;
+            /* Auto-fit creates responsive columns automatically */
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            padding-bottom: 50px;
+        }
+
+        /* Individual Card Styling */
         .card {
-            background: #222;
-            padding: 20px;
-            margin: 15px;
-            border-radius: 10px;
-            display: inline-block;
-            width: 200px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            /* Subtle border and shadow */
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background-color: var(--card-hover);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            color: #94a3b8;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .price {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--price-color);
+            margin: 0;
+        }
+
+        .loading-text {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #64748b;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
 
-<h1>📈 Market Dashboard</h1>
+    <header>
+        <h1>Market Dashboard</h1>
+        <p class="subtitle">Live Asset Prices</p>
+    </header>
 
-{% for asset, price in prices.items() %}
-<div class="card">
-    <h2>{{ asset }}</h2>
-    <p>{{ price }}</p>
-</div>
-{% endfor %}
+    <div class="container" id="dashboard">
+        <div class="loading-text">Connecting to market data...</div>
+    </div>
 
+    <script>
+        async function fetchPrices() {
+            const dashboard = document.getElementById("dashboard");
+            
+            try {
+                // 1. Attempt to fetch from your Flask Python Backend
+                const response = await fetch("/api/prices");
+                
+                // If fetch works, use real data
+                if (response.ok) {
+                    const data = await response.json();
+                    renderDashboard(data);
+                } else {
+                    throw new Error("API Error");
+                }
+
+            } catch (error) {
+                // 2. Fallback for "Preview Mode" (So you can see the UI now without Python running)
+                console.warn("Backend not found. Showing demo data.");
+                const demoData = {
+                    "Bitcoin": 64230.50,
+                    "Gold": 2034.10,
+                    "Silver": 22.85,
+                    "Nifty 50": 22150.00,
+                    "Sensex": 73050.20,
+                    "Nasdaq": 15990.45,
+                    "S&P 500": 5080.60
+                };
+                renderDashboard(demoData);
+            }
+        }
+
+        function renderDashboard(data) {
+            const dashboard = document.getElementById("dashboard");
+            dashboard.innerHTML = ""; // Clear existing content
+
+            for (const [asset, price] of Object.entries(data)) {
+                // Format price with commas (e.g., 1,000.00)
+                const formattedPrice = Number(price).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+
+                dashboard.innerHTML += `
+                    <div class="card">
+                        <h2>${asset}</h2>
+                        <div class="price">${formattedPrice}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initial load
+        fetchPrices();
+
+        // Refresh every 10 seconds
+        setInterval(fetchPrices, 10000);
+    </script>
 </body>
 </html>

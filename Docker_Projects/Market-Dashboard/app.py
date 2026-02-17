@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 import requests
 import yfinance as yf
 
@@ -14,9 +14,8 @@ def get_index_price(symbol):
     data = ticker.history(period="1d")
     return round(data["Close"].iloc[-1], 2)
 
-@app.route("/")
-def dashboard():
-    prices = {
+def fetch_prices():
+    return {
         "Bitcoin": get_crypto_price(),
         "Gold": get_index_price("GC=F"),
         "Silver": get_index_price("SI=F"),
@@ -26,7 +25,14 @@ def dashboard():
         "S&P 500": get_index_price("^GSPC"),
     }
 
-    return render_template("dashboard.html", prices=prices)
+@app.route("/")
+def dashboard():
+    return render_template("dashboard.html")
+
+@app.route("/api/prices")
+def prices_api():
+    return jsonify(fetch_prices())
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
